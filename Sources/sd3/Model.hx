@@ -12,7 +12,9 @@ class Model
 {
 	public var vertexBuffer:VertexBuffer;
 	public var indexBuffer:IndexBuffer;
-	public var size:FastVector3;	
+
+	public var size:FastVector3;
+	public var halfSize:FastVector3;
 		
 	public function new(material:Material, vertices:Array<Float>, indices:Array<Int>, ?otherData:Array<Array<Float>>):Void
 	{
@@ -22,7 +24,9 @@ class Model
 			setVertices(material, vertices);
 			
 		setIndices(indices);
+
 		size = new FastVector3();
+		halfSize = new FastVector3(size.x / 2, size.y / 2, size.z / 2);
 	}	
 
 	public function setVertices(material:Material, vertices:Array<Float>, ?otherData:Array<Array<Float>>):Void

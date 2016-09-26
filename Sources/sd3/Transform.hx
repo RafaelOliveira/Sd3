@@ -124,4 +124,20 @@ class Transform
 								matrix._01, matrix._11, matrix._21,
 								matrix._02, matrix._12, matrix._22);
 	}
+
+	public function toString(onWindowTitle:Bool = false):Void
+	{
+		var text = 'pos ${position.x}, ${position.y}, ${position.z} | 
+					rot ${rotation.x}, ${rotation.y}, ${rotation.z} | 
+					scale ${scale.x}, ${scale.y}, ${scale.z}';
+
+		if (onWindowTitle)
+		{
+			#if (sys_html5 || sys_debug_html5)
+			js.Browser.document.title = text;
+			#end
+		}
+		else		
+			trace(text);		
+	}
 }

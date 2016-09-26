@@ -16,7 +16,7 @@ class EngineOptions
 	public var backbufferWidth:Int;
 	public var backbufferHeight:Int;
 
-	public function new(lightLevel:Int = 2, backbuffer:Bool = false, backbufferWidth:Int = 0, backbufferHeight:Int = 0):Void
+	public function new(?lightLevel:Null<Int> = 2, ?backbuffer:Null<Bool> = false, ?backbufferWidth:Null<Int> = 0, ?backbufferHeight:Null<Int> = 0):Void
 	{
 		this.lightLevel = lightLevel;
 		this.backbuffer = backbuffer;
@@ -97,14 +97,16 @@ class Engine
 	
 	public function update():Void
 	{
-		keyboard.update();
-		mouse.update();
-		camera.update();
-
 		if (activeScene != null)
+		{
 			activeScene.update();
+			
+			keyboard.update();
+			mouse.update();
+			camera.update();			
 
-		mouse.postUpdate();
+			mouse.postUpdate();
+		}		
 	}
 	
 	public function render(canvas:Canvas):Void
