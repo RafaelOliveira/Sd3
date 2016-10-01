@@ -11,9 +11,9 @@ class Util
 		else if (Keyboard.isHeld('d') || Keyboard.isPressed('right'))			
 			transform.moveToRight(value);
 		
-		if (Keyboard.isHeld('w') || Keyboard.isPressed('up'))			
-			transform.moveForward(value);			
-		else if (Keyboard.isHeld('s')|| Keyboard.isPressed('down'))			
+		if (Keyboard.isHeld('w') || Keyboard.isPressed('up'))
+			transform.moveForward(value);
+		else if (Keyboard.isHeld('s') || Keyboard.isPressed('down'))
 			transform.moveBackward(value);
 	}
 }

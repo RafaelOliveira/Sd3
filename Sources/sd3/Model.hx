@@ -1,12 +1,20 @@
 package sd3;
 
-import kha.Blob;
 import kha.math.FastVector3;
 import kha.graphics4.VertexBuffer;
 import kha.graphics4.IndexBuffer;
 import kha.graphics4.Usage;
 import sd3.materials.Material;
-import sd3.loaders.ObjLoader;
+import sd3.ds.Either;
+
+abstract ModelType(Either<String, Model>)
+{
+	@:dox(hide) public inline function new(e:Either<String, Model>) this = e;
+	@:dox(hide) public var type(get, never):Either<String, Model>;
+	@:to inline function get_type() return this;
+	@:from static function fromLeft(v:String) return new ModelType(Left(v));
+	@:from static function fromRight(v:Model) return new ModelType(Right(v));
+}
 
 class Model
 {
@@ -26,7 +34,7 @@ class Model
 		setIndices(indices);
 
 		size = new FastVector3();
-		halfSize = new FastVector3(size.x / 2, size.y / 2, size.z / 2);
+		halfSize = new FastVector3();
 	}	
 
 	public function setVertices(material:Material, vertices:Array<Float>, ?otherData:Array<Array<Float>>):Void
@@ -90,14 +98,5 @@ class Model
 		for (i in 0...iData.length)
 			iData[i] = indices[i];		
 		indexBuffer.unlock();
-	}
-
-	public static function load(material:Material, file:Blob):Model
-	{
-		var modelData = new ObjLoader(file.toString());
-		var model = new Model(material, modelData.data, modelData.indices);
-		model.size = modelData.size;
-
-		return model;
 	}
 }

@@ -14,8 +14,6 @@ import kha.graphics4.TextureUnit;
 
 class Material
 {
-	static var cache:Map<String, Material>;
-
 	public var pipeline:PipelineState;	
 	/**
 	 * Structure that maintain the attributes
@@ -53,7 +51,8 @@ class Material
 		setShaders(vertexShader, fragmentShader);
 
 		// uniforms
-		modelMatrixId = getConstantLocation('model');
+		if (Engine.lightLevel > 0)
+			modelMatrixId = getConstantLocation('model');
 
 		if (Engine.lightLevel > 0)
 			lightUniforms = new LightUniforms(pipeline);				
@@ -110,61 +109,5 @@ class Material
 	inline public function getConstantLocation(name:String):ConstantLocation
 	{
 		return pipeline.getConstantLocation(name);
-	}
-
-	public static function get():Material
-	{		
-		var material:Material = null;
-		var materialName:String;
-
-		if (cache == null)		
-			cache = new Map<String, Material>();
-
-		if (Engine.lightLevel == 2)
-		{
-			materialName = 'texture-full-light';
-			material = cache.get(materialName);
-			
-			if (material == null)
-			{
-				material = new Material(Shaders.texture_full_light_vert, Shaders.texture_full_light_frag);
-				material.bindAttribute('textureCoord', VertexData.Float2);
-				material.bindAttribute('normal', VertexData.Float3);
-				material.textureId = material.getTextureUnit('textureSampler');
-
-				cache.set(materialName, material);
-			}
-		}
-		else if (Engine.lightLevel == 1)
-		{
-			materialName = 'texture-basic-light';
-			material = cache.get(materialName);
-			
-			if (material == null)
-			{
-				material = new Material(Shaders.texture_basic_light_vert, Shaders.texture_basic_light_frag);
-				material.bindAttribute('textureCoord', VertexData.Float2);
-				material.bindAttribute('normal', VertexData.Float3);
-				material.textureId = material.getTextureUnit('textureSampler');
-
-				cache.set(materialName, material);
-			}
-		}
-		else
-		{
-			materialName = 'texture-no-light';
-			material = cache.get(materialName);
-			
-			if (material == null)
-			{
-				material = new Material(Shaders.texture_no_light_vert, Shaders.texture_no_light_frag);
-				material.bindAttribute('textureCoord', VertexData.Float2);				
-				material.textureId = material.getTextureUnit('textureSampler');
-
-				cache.set(materialName, material);
-			}
-		}
-			
-		return material;		
 	}
 }

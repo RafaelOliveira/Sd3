@@ -5,14 +5,15 @@ import kha.Image;
 import kha.FastFloat;
 import kha.math.FastMatrix4;
 import kha.Canvas;
+import sd3.objects2d.Object2d;
 
 class Scene
 {
 	public var objects:Array<Object>;
-	var camera:Camera;
+	public var objects2d:Array<Object2d>;
 
-	var lights:Array<Light>;
-	var lightAmbient:FastFloat;
+	var camera:Camera;
+	var lights:Array<Light>;	
 
 	var bgColor:Color;
 	var bgImage:Image;
@@ -20,10 +21,10 @@ class Scene
 	public function new():Void
 	{
 		objects = new Array<Object>();
-		camera = Camera.get();		
+		objects2d = new Array<Object2d>();
 
-		lights = new Array<Light>();
-		lightAmbient = 0.005;
+		camera = Camera.get();
+		lights = new Array<Light>();		
 
 		bgColor = Color.Black;
 	}
@@ -31,13 +32,32 @@ class Scene
 	public function update():Void
 	{
 		for (object in objects)
-			object.update();
+		{
+			if (object.active)
+				object.update();
+		}
+		
+		for (object2d in objects2d)
+		{
+			if (object2d.active)
+				object2d.update();
+		}
 	}
 
-	public function add(object:Object):Void
+	public function add(object:Object):Object
 	{
 		object.scene = this;
 		objects.push(object);
+
+		return object;
+	}
+
+	public function add2d(object2d:Object2d):Object2d
+	{
+		object2d.scene = this;
+		objects2d.push(object2d);
+
+		return object2d;
 	}
 
 	public function remove(object:Object):Void
@@ -46,9 +66,17 @@ class Scene
 		objects.remove(object);
 	}
 
-	public function addLight(light:Light):Void
+	public function remove2d(object2d:Object2d):Void
+	{
+		object2d.scene = null;
+		objects2d.remove(object2d);
+	}
+
+	public function addLight(light:Light):Light
 	{		
-		lights.push(light);		
+		lights.push(light);
+
+		return light;
 	}
 
 	public function removeLight(light:Light):Void
@@ -58,40 +86,55 @@ class Scene
 
 	public inline function render(canvas:Canvas):Void
 	{
-		var g = canvas.g4;
+		var g4 = canvas.g4;
+		var g2 = canvas.g2;
 
 		if (bgImage != null)
 		{
-			canvas.g2.begin(true, Color.Black);
-			canvas.g2.drawScaledSubImage(bgImage, 0, 0, bgImage.width, bgImage.height, 0, 0, Engine.gameWidth, Engine.gameHeight);
-			canvas.g2.end();
+			g2.begin(true, Color.Black);
+			g2.drawScaledSubImage(bgImage, 0, 0, bgImage.width, bgImage.height, 0, 0, Engine.gameWidth, Engine.gameHeight);
+			g2.end();
 			
-			g.begin();			
-			g.clear(null, 1);			
+			g4.begin();			
+			g4.clear(null, 1);			
 		}
 		else
 		{			
-			g.begin();
-			g.clear(bgColor, 1);
+			g4.begin();
+			g4.clear(bgColor, 1);
 		}
 		
 		for (object in objects)
 		{
-			object.setMaterialAndBuffers(g);
+			if (object.visible)
+			{
+				object.setMaterialAndBuffers(g4);
 			
-			var mvp = FastMatrix4.identity();
-			mvp = mvp.multmat(camera.matrix);
-			mvp = mvp.multmat(object.matrix);			
-			
-			// Send our transformation to the currently bound shader, in the "mvp" uniform
-			g.setMatrix(object.material.getConstantLocation('mvp'), mvp);
+				var mvp = FastMatrix4.identity();
+				mvp = mvp.multmat(camera.matrix);
+				mvp = mvp.multmat(object.matrix);			
+				
+				// Send our transformation to the currently bound shader, in the "mvp" uniform
+				g4.setMatrix(object.material.getConstantLocation('mvp'), mvp);
 
-			if (Engine.lightLevel > 0 && lights.length > 0)
-				object.material.lightUniforms.update(g, object.shininess, object.specularColor, lights, lightAmbient, camera.position);			
-			
-			g.drawIndexedVertices();
+				if (Engine.lightLevel > 0) //&& lights.length > 0)
+					object.material.lightUniforms.update(g4, object.shininess, object.specularColor, lights, camera.position);
+				
+				g4.drawIndexedVertices();
+			}			
 		}
 
-		canvas.g4.end();
+		g4.end();
+
+		if (objects2d.length > 0)
+		{
+			g2.begin(false);
+			for (object2d in objects2d)
+			{
+				if (object2d.visible)
+					object2d.render(g2);
+			}
+			g2.end();
+		}
 	}
 }
