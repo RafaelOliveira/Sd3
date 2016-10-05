@@ -22,7 +22,7 @@ class RectCollision
 		rect2 = new Rectangle();
 	}
 
-	public function add(nameList:String, object:Object):Void
+	public function add(object:Object, nameList:String):Void
 	{
 		var list = lists.get(nameList);
 
@@ -35,7 +35,7 @@ class RectCollision
 		list.push(object);
 	}
 
-	public function remove(nameList:String, object:Object):Void
+	public function remove(object:Object, nameList:String):Void
 	{
 		var list = lists.get(nameList);
 
@@ -43,7 +43,7 @@ class RectCollision
 			list.remove(object);		
 	}
 
-	public function separateObject(nameList:String, object:Object):Void
+	public function separateObject(object:Object, nameList:String):Void
 	{
 		var list = lists.get(nameList);
 
@@ -68,22 +68,27 @@ class RectCollision
 		}		
 	}
 
-	public function checkFirstCollisionObjectList(object:Object, otherObjects:Array<Object>):Object
+	public function checkFirstCollisionObjectList(object:Object, nameList:String):Object
 	{
-		var hw = object.model.size.x * 0.5;
-		var hh = object.model.size.z * 0.5;
+		var list = lists.get(nameList);
 
-		rect1.setFromObject(object);
-
-		for (obj in otherObjects)
+		if (list != null)
 		{
-			if (obj != object)
-			{
-				rect2.setFromObject(obj);
+			var hw = object.model.size.x * 0.5;
+			var hh = object.model.size.z * 0.5;
 
-				if (rect1.checkCollision(rect2))			
-					return obj;
-			}						
+			rect1.setFromObject(object);
+
+			for (obj in list)
+			{
+				if (obj != object)
+				{
+					rect2.setFromObject(obj);
+
+					if (rect1.checkCollision(rect2))
+						return obj;
+				}						
+			}
 		}
 
 		return null;

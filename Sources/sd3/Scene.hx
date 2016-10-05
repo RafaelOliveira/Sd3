@@ -12,7 +12,7 @@ class Scene
 	public var objects:Array<Object>;
 	public var objects2d:Array<Object2d>;
 
-	var camera:Camera;
+	public var camera:Camera;
 	var lights:Array<Light>;	
 
 	var bgColor:Color;
@@ -137,4 +137,6 @@ class Scene
 			g2.end();
 		}
 	}
+
+	public function updateGameSize(width:Int, height:Int):Void {}
 }

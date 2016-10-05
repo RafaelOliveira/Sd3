@@ -39,14 +39,16 @@ class Transform
 		matrix = FastMatrix4.identity();
 		matrix = matrix.multmat(FastMatrix4.translation(position.x, position.y, position.z));
 
-		if (rotation.x != 1)
+		/*if (rotation.x != 0)
 			matrix = matrix.multmat(FastMatrix4.rotationX(rotation.x));
 
-		if (rotation.y != 1)
+		if (rotation.y != 0)
 			matrix = matrix.multmat(FastMatrix4.rotationY(rotation.y));
 
-		if (rotation.z != 1)
-			matrix = matrix.multmat(FastMatrix4.rotationZ(rotation.z));
+		if (rotation.z != 0)
+			matrix = matrix.multmat(FastMatrix4.rotationZ(rotation.z));*/
+
+		matrix = matrix.multmat(FastMatrix4.rotation(rotation.y, rotation.z, rotation.x));
 
 		matrix = matrix.multmat(FastMatrix4.scale(scale.x, scale.y, scale.z));		
 
