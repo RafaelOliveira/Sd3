@@ -23,11 +23,15 @@ class Scene
 		objects = new Array<Object>();
 		objects2d = new Array<Object2d>();
 
-		camera = Camera.get();
+		camera = new Camera();
 		lights = new Array<Light>();		
 
 		bgColor = Color.Black;
 	}
+
+	public function begin():Void {}	
+
+	public function deviceRotated(width:Int, height:Int):Void {}
 
 	public function update():Void
 	{
@@ -48,6 +52,8 @@ class Scene
 	{
 		object.scene = this;
 		objects.push(object);
+
+		object.added();
 
 		return object;
 	}
@@ -136,7 +142,5 @@ class Scene
 			}
 			g2.end();
 		}
-	}
-
-	public function updateGameSize(width:Int, height:Int):Void {}
+	}	
 }

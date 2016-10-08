@@ -5,6 +5,7 @@ import kha.Canvas;
 import kha.System;
 import sd3.input.Keyboard;
 import sd3.input.Mouse;
+import sd3.input.Touch;
 import sd3.loaders.Loader;
 import sd3.internal.MobileBrowser;
 
@@ -15,22 +16,24 @@ import kha.SystemImpl;
 @:structInit
 class EngineOptions
 {
-	public var lightLevel:Int;		
+	public var lightLevel:Int;
+	public var smoothTextureFilter:Bool;
 	public var loadDefaultMaterial:Bool;
-
-	public function new(?lightLevel:Null<Int> = 2, ?loadDefaultMaterial:Null<Bool> = true):Void
+	
+	public function new(?lightLevel:Null<Int> = 2, ?smoothTextureFilter:Null<Bool> = true, ?loadDefaultMaterial:Null<Bool> = true):Void
 	{
 		this.lightLevel = lightLevel;		
-		this.loadDefaultMaterial = loadDefaultMaterial;
+		this.smoothTextureFilter = smoothTextureFilter;
+		this.loadDefaultMaterial = loadDefaultMaterial;		
 	}
 }
 
 @:allow(sd3.internal.MobileBrowser)
 class Engine
 {	
-	var camera:Camera;
 	var keyboard:Keyboard;
 	var mouse:Mouse;
+	var touch:Touch;
 
 	var sceneList:Map<String, Scene>;
 	public static var activeScene:Scene;
@@ -38,7 +41,9 @@ class Engine
 	public static var gameWidth:Int;
 	public static var gameHeight:Int;
 	
-	public static var lightLevel:Int;
+	public static var lightLevel(default, null):Int;
+
+	public static var smoothTextureFilter(default, null):Bool;
 	/**
 	 * Indicator of the portrait orientation 
 	*/
@@ -46,16 +51,17 @@ class Engine
 	/**
 	 * Indicator of the landscape orientation 
 	 */
-	public inline static var LANDSCAPE:Int = 2;
-	
+	public inline static var LANDSCAPE:Int = 2;	
 	/**
 	 * Indicates if the game is running in a mobile browser or desktop (js) 
 	 */
 	public static var isMobile:Bool = false;
 
-	public static var actualOrientation:Int;
+	public static var actualOrientation:Int;	
 
 	static var mobile:MobileBrowser;
+	static var rotationDeviceOrientation:Int = 0;
+	static var rotationDeviceScene:Scene;	
 
 	public function new(?option:EngineOptions) 
 	{		
@@ -74,20 +80,26 @@ class Engine
 					lightLevel = 2;
 			}
 			else
-				lightLevel = option.lightLevel;			
+				lightLevel = option.lightLevel;
+
+			smoothTextureFilter = option.smoothTextureFilter;
 
 			if (option.loadDefaultMaterial)
-				Loader.loadDefaultMaterial();			
+				Loader.loadDefaultMaterial();
 		}
 		else
 		{			
-			lightLevel = 2;			
+			lightLevel = 2;
+			smoothTextureFilter = true;
 			Loader.loadDefaultMaterial();
 		}
 
 		keyboard = new Keyboard();
-		mouse = new Mouse();
-		camera = new Camera();
+
+		if (!isMobile)
+			mouse = new Mouse();
+		else
+			touch = new Touch();		
 
 		sceneList = new Map<String, Scene>();		
 		activeScene = null;
@@ -98,7 +110,10 @@ class Engine
 		sceneList.set(name, scene);
 
 		if (setActive)
-			activeScene = scene;		
+		{
+			activeScene = scene;
+			activeScene.begin();
+		}			
 	}
 
 	public function removeScene(name:String):Void
@@ -109,31 +124,68 @@ class Engine
 	public function setActiveScene(name:String):Void
 	{
 		activeScene = sceneList.get(name);
+		activeScene.begin();
+	}
+
+	public function setRotationDeviceScene(rotationDeviceScene:Scene, rotationDeviceOrientation:Int):Void
+	{		
+			Engine.rotationDeviceScene = rotationDeviceScene;
+			Engine.rotationDeviceOrientation = rotationDeviceOrientation;
+								
 	}
 	
 	public function update():Void
 	{
-		if (activeScene != null)
+		#if js
+		if (rotationDeviceOrientation == actualOrientation)
 		{
-			activeScene.update();
-			
-			keyboard.update();
-			mouse.update();
-			camera.update();			
+			rotationDeviceScene.update();
+			rotationDeviceScene.camera.update();
 
-			mouse.postUpdate();
-
-			#if js
 			if (mobile != null)
 				mobile.update();
-			#end
+		}			
+		else if (activeScene != null)
+		{
+			updateActiveScene();
+
+			if (mobile != null)
+				mobile.update();
 		}		
+		#else
+		if (activeScene != null)
+			updateActiveScene();		
+		#end
+	}
+
+	function updateActiveScene()
+	{
+		activeScene.update();
+							
+		keyboard.update();
+
+		if (!isMobile)
+			mouse.update();
+		else
+			touch.update();
+
+		activeScene.camera.update();			
+
+		if (!Engine.isMobile)
+			mouse.postUpdate();
 	}
 	
 	public function render(canvas:Canvas):Void
 	{
+		#if js
+		if (rotationDeviceOrientation == actualOrientation)
+			rotationDeviceScene.render(canvas);
+		else if (activeScene != null)
+			activeScene.render(canvas);
+		#else
 		if (activeScene != null)
 			activeScene.render(canvas);
+		#end
 	}
 
 	public inline static function setupMobileBrowser():Void

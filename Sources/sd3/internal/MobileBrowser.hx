@@ -20,7 +20,7 @@ class MobileBrowser
 
 	var actualWidth:Int;
 
-	var actualHeight:Int;
+	var actualHeight:Int;	
 
 	function new():Void {}
 	
@@ -139,8 +139,16 @@ class MobileBrowser
 		Engine.gameWidth = w;
 		Engine.gameHeight = h;
 
-		Engine.activeScene.camera.matrixDirty = true;
-		Engine.activeScene.updateGameSize(w, h);
+		if (Engine.actualOrientation != Engine.rotationDeviceOrientation)
+			updateScene(Engine.activeScene, w, h);
+		else
+			updateScene(Engine.rotationDeviceScene, w, h);					
+	}
+
+	function updateScene(scene:Scene, w:Int, h:Int):Void
+	{
+		scene.camera.matrixDirty = true;
+		scene.deviceRotated(w, h);
 	}
 }
 

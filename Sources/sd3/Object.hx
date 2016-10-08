@@ -24,8 +24,7 @@ class Object extends Transform
 	public var visible:Bool;
 
 	public var model:Model;
-	public var material:Material;
-	public var camera:Camera;
+	public var material:Material;	
 	public var scene:Scene;
 
 	public var shininess:FastFloat;
@@ -55,9 +54,7 @@ class Object extends Transform
 
 		this.image = image;
 		
-		this.material = material == null ? Loader.getMaterial() : material;
-
-		camera = Camera.get();
+		this.material = material == null ? Loader.getMaterial() : material;		
 
 		shininess = 80.0;
 		specularColor = Color.White;
@@ -67,6 +64,8 @@ class Object extends Transform
 		if (Engine.lightLevel > 0)
 			updateNormalMatrix();
 	}
+
+	public function added():Void {}
 
 	public function addComponent(comp:Component)
 	{
@@ -119,8 +118,11 @@ class Object extends Transform
 		{
 			g.setTexture(material.textureId, image);
 
-			g.setTextureParameters(material.textureId, TextureAddressing.Clamp, TextureAddressing.Clamp,
-				TextureFilter.PointFilter, TextureFilter.PointFilter, MipMapFilter.NoMipFilter);
+			if (!Engine.smoothTextureFilter)
+			{
+				g.setTextureParameters(material.textureId, TextureAddressing.Clamp, TextureAddressing.Clamp,
+					TextureFilter.PointFilter, TextureFilter.PointFilter, MipMapFilter.NoMipFilter);
+			}			
 		}			
 
 		if (Engine.lightLevel > 0)

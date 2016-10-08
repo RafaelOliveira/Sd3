@@ -1,5 +1,7 @@
 package sd3;
 
+import kha.Color;
+import kha.Image;
 import sd3.input.Keyboard;
 
 class Util
@@ -15,5 +17,14 @@ class Util
 			transform.moveForward(value);
 		else if (Keyboard.isHeld('s') || Keyboard.isPressed('down'))
 			transform.moveBackward(value);
+	}
+
+	public static function createRectImage(width:Int, height:Int, color:Color):Image
+	{
+		var image = Image.createRenderTarget(width, height);
+		image.g2.begin(true, color);
+		image.g2.end();
+
+		return image; 
 	}
 }
